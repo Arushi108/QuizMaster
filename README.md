@@ -107,3 +107,5 @@ assignment/
 - All quiz timers are enforced on the frontend
 - User sessions are managed securely
 - The application includes basic validation and error handling
+### 🏠 Home Page
+<img src="assets/home.png" width="700">
