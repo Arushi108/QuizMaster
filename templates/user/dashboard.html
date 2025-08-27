@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-tachometer-alt"></i> My Dashboard</h2>
+            <p class="text-muted">Welcome back, {{ session.full_name }}! Ready for your next quiz?</p>
+        </div>
+    </div>
+
+    <!-- Available Subjects -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> Available Subjects</h5>
+                </div>
+                <div class="card-body">
+                    {% if subjects %}
+                        <div class="row">
+                            {% for subject in subjects %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-primary">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">{{ subject.name }}</h6>
+                                            <p class="card-text text-muted">{{ subject.description or "Click to explore chapters and quizzes" }}</p>
+                                            <a href="/user/subject/{{ subject.id }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-play-circle"></i> Explore
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-book fa-3x mb-3"></i>
+                            <h5>No Subjects Available</h5>
+                            <p>Please contact the administrator to add subjects.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Quiz Attempts -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Recent Quiz Attempts</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_scores %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Quiz</th>
+                                        <th>Score</th>
+                                        <th>Date</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for score in recent_scores %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ score.quiz.chapter.name }}</strong><br>
+                                                <small class="text-muted">{{ score.quiz.chapter.subject.name }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">
+                                                    {{ score.total_scored }}/{{ score.total_questions }}
+                                                </span>
+                                            </td>
+                                            <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                {% set percentage = (score.total_scored / score.total_questions * 100) | round %}
+                                                {% if percentage >= 80 %}
+                                                    <span class="badge bg-success">Excellent ({{ percentage }}%)</span>
+                                                {% elif percentage >= 60 %}
+                                                    <span class="badge bg-warning">Good ({{ percentage }}%)</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Needs Improvement ({{ percentage }}%)</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center">
+                            <a href="/user/scores" class="btn btn-outline-primary">
+                                <i class="fas fa-chart-line"></i> View All Scores
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                            <h5>No Quiz Attempts Yet</h5>
+                            <p>Start taking quizzes to see your progress here!</p>
+                            <a href="/user/quizzes" class="btn btn-primary">
+                                <i class="fas fa-play-circle"></i> Take Your First Quiz
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Performance Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_scores %}
+                        {% set total_attempts = recent_scores|length %}
+                        {% set total_score = recent_scores|sum(attribute='total_scored') %}
+                        {% set total_questions = recent_scores|sum(attribute='total_questions') %}
+                        {% set avg_percentage = (total_score / total_questions * 100) | round if total_questions > 0 else 0 %}
+                        
+                        <div class="text-center mb-3">
+                            <canvas id="performanceChart" width="200" height="200" 
+                                data-excellent="{{ excellent_count }}"
+                                data-good="{{ good_count }}" 
+                                data-needs-improvement="{{ needs_improvement_count }}"></canvas>
+                        </div>
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-primary">{{ total_attempts }}</h4>
+                                <small class="text-muted">Total Attempts</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success">{{ avg_percentage }}%</h4>
+                                <small class="text-muted">Avg Score</small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                            <p>Take quizzes to see your performance summary</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <a href="/user/quizzes" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-play-circle"></i><br>
+                                <small>Take Quiz</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="/user/scores" class="btn btn-info btn-lg w-100">
+                                <i class="fas fa-chart-line"></i><br>
+                                <small>View Scores</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="/user/profile" class="btn btn-success btn-lg w-100">
+                                <i class="fas fa-user-edit"></i><br>
+                                <small>Edit Profile</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if recent_scores %}
+{% set excellent_count = 0 %}
+{% set good_count = 0 %}
+{% set needs_improvement_count = 0 %}
+{% for score in recent_scores %}
+    {% set percentage = (score.total_scored / score.total_questions * 100) | round %}
+    {% if percentage >= 80 %}
+        {% set excellent_count = excellent_count + 1 %}
+    {% elif percentage >= 60 %}
+        {% set good_count = good_count + 1 %}
+    {% else %}
+        {% set needs_improvement_count = needs_improvement_count + 1 %}
+    {% endif %}
+{% endfor %}
+<script>
+    // Performance Chart
+    const ctx = document.getElementById('performanceChart');
+    const chartCanvas = ctx.getContext('2d');
+    
+    // Read data from HTML data attributes
+    const excellentCount = parseInt(ctx.dataset.excellent) || 0;
+    const goodCount = parseInt(ctx.dataset.good) || 0;
+    const needsImprovementCount = parseInt(ctx.dataset.needsImprovement) || 0;
+    
+    new Chart(chartCanvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['Excellent (80%+)', 'Good (60-79%)', 'Needs Improvement (<60%)'],
+            datasets: [{
+                data: [excellentCount, goodCount, needsImprovementCount],
+                backgroundColor: [
+                    '#28a745',
+                    '#ffc107',
+                    '#dc3545'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        fontSize: 10
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

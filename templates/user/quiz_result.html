@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Result - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card text-center">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-trophy"></i> Quiz Completed!</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h1 class="display-4 text-primary">{{ score.total_scored }}/{{ score.total_questions }}</h1>
+                            <p class="lead">Your Score</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h1 class="display-4 
+                                {% if percentage >= 80 %}text-success
+                                {% elif percentage >= 60 %}text-warning
+                                {% else %}text-danger
+                                {% endif %}">{{ percentage }}%</h1>
+                            <p class="lead">Percentage</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        {% if percentage >= 80 %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-star"></i> Excellent work! You have a great understanding of the topic.
+                            </div>
+                        {% elif percentage >= 60 %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-thumbs-up"></i> Good job! Keep practicing to improve further.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-book"></i> Don't worry! Review the material and try again.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Quiz Details</h6>
+                        <p class="text-muted">
+                            <strong>Subject:</strong> {{ score.quiz.chapter.subject.name }}<br>
+                            <strong>Chapter:</strong> {{ score.quiz.chapter.name }}<br>
+                            <strong>Completed:</strong> {{ score.time_stamp_of_attempt.strftime('%Y-%m-%d at %H:%M') }}
+                        </p>
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt"></i> Back to Dashboard
+                        </a>
+                        <a href="{{ url_for('user.scores') }}" class="btn btn-info">
+                            <i class="fas fa-chart-line"></i> View All Scores
+                        </a>
+                        <a href="{{ url_for('user.chapter_quizzes', chapter_id=score.quiz.chapter_id) }}" class="btn btn-success">
+                            <i class="fas fa-redo"></i> Take Another Quiz
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

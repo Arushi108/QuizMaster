@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}My Scores - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-line"></i> My Quiz Scores</h2>
+            <p class="text-muted">Track your performance across all quizzes</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> All Quiz Attempts</h5>
+                </div>
+                <div class="card-body">
+                    {% if scores %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Quiz</th>
+                                        <th>Subject</th>
+                                        <th>Score</th>
+                                        <th>Percentage</th>
+                                        <th>Date</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for score in scores %}
+                                        {% set percentage = (score.total_scored / score.total_questions * 100) | round %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ score.quiz.chapter.name }}</strong>
+                                            </td>
+                                            <td>{{ score.quiz.chapter.subject.name }}</td>
+                                            <td>
+                                                <span class="badge bg-primary fs-6">
+                                                    {{ score.total_scored }}/{{ score.total_questions }}
+                                                </span>
+                                            </td>
+                                            <td>{{ percentage }}%</td>
+                                            <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                {% if percentage >= 80 %}
+                                                    <span class="badge bg-success">Excellent</span>
+                                                {% elif percentage >= 60 %}
+                                                    <span class="badge bg-warning">Good</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Needs Improvement</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <h4>{{ scores|length }}</h4>
+                                            <p class="mb-0">Total Attempts</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            {% set avg_score = (scores|sum(attribute='total_scored') / scores|sum(attribute='total_questions') * 100) | round if scores else 0 %}
+                                            <h4>{{ avg_score }}%</h4>
+                                            <p class="mb-0">Average Score</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center">
+                                            {% set best_score = scores|map(attribute='total_scored')|max if scores else 0 %}
+                                            {% set best_total = scores|selectattr('total_scored', 'equalto', best_score)|first %}
+                                            {% set best_percentage = (best_score / best_total.total_questions * 100) | round if best_total else 0 %}
+                                            <h4>{{ best_percentage }}%</h4>
+                                            <p class="mb-0">Best Score</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-chart-line fa-3x mb-3"></i>
+                            <h5>No Quiz Attempts Yet</h5>
+                            <p>Take your first quiz to see your scores here!</p>
+                            <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
+                                <i class="fas fa-play-circle"></i> Take a Quiz
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

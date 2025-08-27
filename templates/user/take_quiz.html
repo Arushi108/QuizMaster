@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Take Quiz - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-clipboard-list"></i> {{ quiz.chapter.name }} Quiz</h2>
+            <p class="text-muted">{{ quiz.chapter.subject.name }} - Duration: {{ quiz.time_duration }} minutes</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-9">
+            <form method="POST" action="{{ url_for('user.submit_quiz', quiz_id=quiz.id) }}" id="quizForm">
+                {% for question in questions %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Question {{ loop.index }} of {{ questions|length }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ question.question_statement }}</h6>
+                            
+                            <div class="mt-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" 
+                                           name="question_{{ question.id }}" value="1" 
+                                           id="q{{ question.id }}_opt1" required>
+                                    <label class="form-check-label" for="q{{ question.id }}_opt1">
+                                        A) {{ question.option1 }}
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" 
+                                           name="question_{{ question.id }}" value="2" 
+                                           id="q{{ question.id }}_opt2" required>
+                                    <label class="form-check-label" for="q{{ question.id }}_opt2">
+                                        B) {{ question.option2 }}
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" 
+                                           name="question_{{ question.id }}" value="3" 
+                                           id="q{{ question.id }}_opt3" required>
+                                    <label class="form-check-label" for="q{{ question.id }}_opt3">
+                                        C) {{ question.option3 }}
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" 
+                                           name="question_{{ question.id }}" value="4" 
+                                           id="q{{ question.id }}_opt4" required>
+                                    <label class="form-check-label" for="q{{ question.id }}_opt4">
+                                        D) {{ question.option4 }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <div class="card">
+                    <div class="card-body text-center">
+                        <button type="submit" class="btn btn-success btn-lg" onclick="return confirmSubmit()">
+                            <i class="fas fa-check"></i> Submit Quiz
+                        </button>
+                        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary btn-lg ms-2">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card sticky-top">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-clock"></i> Quiz Timer</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div id="timer" class="display-6 text-primary mb-3" 
+                         data-duration="{{ quiz.time_duration }}" 
+                         data-total-questions="{{ questions|length }}">{{ quiz.time_duration }}:00</div>
+                    <p class="text-muted">Time Remaining</p>
+                    
+                    <hr>
+                    
+                    <h6>Progress</h6>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                    <small class="text-muted">
+                        <span id="answeredCount">0</span> of {{ questions|length }} answered
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Quiz Timer - Get data from HTML attributes
+    const timerElement = document.getElementById('timer');
+    const progressBar = document.getElementById('progressBar');
+    const answeredCount = document.getElementById('answeredCount');
+    
+    const duration = parseInt(timerElement.dataset.duration) || 60;
+    const totalQuestions = parseInt(timerElement.dataset.totalQuestions) || 0;
+    let timeRemaining = duration * 60; // Convert to seconds
+    
+    function updateTimer() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeRemaining <= 0) {
+            alert('Time is up! Your quiz will be submitted automatically.');
+            document.getElementById('quizForm').submit();
+        }
+        
+        timeRemaining--;
+    }
+    
+    // Update timer every second
+    const timerInterval = setInterval(updateTimer, 1000);
+    
+    // Track answered questions
+    function updateProgress() {
+        const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+        answeredCount.textContent = answered;
+        const progress = (answered / totalQuestions) * 100;
+        progressBar.style.width = progress + '%';
+    }
+    
+    // Add event listeners to radio buttons
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', updateProgress);
+    });
+    
+    function confirmSubmit() {
+        const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+        if (answered < totalQuestions) {
+            return confirm(`You have only answered ${answered} out of ${totalQuestions} questions. Do you want to submit anyway?`);
+        }
+        return confirm('Are you sure you want to submit your quiz? This action cannot be undone.');
+    }
+    
+    // Prevent accidental page refresh
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Your quiz progress will be lost.';
+    });
+</script>
+{% endblock %}

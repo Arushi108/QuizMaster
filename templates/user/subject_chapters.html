@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject.name }} Chapters - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">{{ subject.name }}</li>
+                </ol>
+            </nav>
+            <h2><i class="fas fa-book"></i> {{ subject.name }}</h2>
+            <p class="text-muted">{{ subject.description or "Explore chapters and take quizzes" }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bookmark"></i> Available Chapters</h5>
+                </div>
+                <div class="card-body">
+                    {% if chapters %}
+                        <div class="row">
+                            {% for chapter in chapters %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100 border-primary">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-bookmark text-primary"></i> {{ chapter.name }}
+                                            </h6>
+                                            <p class="card-text text-muted">
+                                                {{ chapter.description or "No description available" }}
+                                            </p>
+                                            <div class="mb-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clipboard-list"></i> 
+                                                    {{ chapter.quizzes|length }} quiz(es) available
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            {% if chapter.quizzes %}
+                                                <a href="{{ url_for('user.chapter_quizzes', chapter_id=chapter.id) }}" 
+                                                   class="btn btn-primary btn-sm w-100">
+                                                    <i class="fas fa-play-circle"></i> View Quizzes
+                                                </a>
+                                            {% else %}
+                                                <button class="btn btn-secondary btn-sm w-100" disabled>
+                                                    <i class="fas fa-exclamation-circle"></i> No Quizzes Available
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-bookmark fa-3x mb-3"></i>
+                            <h5>No Chapters Available</h5>
+                            <p>This subject doesn't have any chapters yet. Please check back later!</p>
+                            <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

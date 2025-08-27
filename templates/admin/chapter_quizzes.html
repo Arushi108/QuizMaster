@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chapter.name }} Quizzes - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.chapters') }}">Chapters</a></li>
+                    <li class="breadcrumb-item active">{{ chapter.name }}</li>
+                </ol>
+            </nav>
+            <h2><i class="fas fa-clipboard-list"></i> {{ chapter.name }} Quizzes</h2>
+            <p class="text-muted">{{ chapter.subject.name }} - {{ chapter.description or "Manage quizzes for this chapter" }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list"></i> Chapter Quizzes</h5>
+                        <a href="{{ url_for('admin.add_quiz') }}?chapter_id={{ chapter.id }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Quiz
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if quizzes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Quiz Date</th>
+                                        <th>Duration</th>
+                                        <th>Questions</th>
+                                        <th>Remarks</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quiz in quizzes %}
+                                        <tr>
+                                            <td>{{ quiz.id }}</td>
+                                            <td>{{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</td>
+                                            <td>{{ quiz.time_duration }} min</td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    {{ quiz.questions|length }} questions
+                                                </span>
+                                            </td>
+                                            <td>{{ quiz.remarks[:30] + '...' if quiz.remarks and quiz.remarks|length > 30 else quiz.remarks or 'No remarks' }}</td>
+                                            <td>{{ quiz.created_at.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                <a href="{{ url_for('admin.quiz_questions', quiz_id=quiz.id) }}" 
+                                                   class="btn btn-outline-primary btn-sm me-1" title="View Questions">
+                                                    <i class="fas fa-question-circle"></i>
+                                                </a>
+                                                <a href="{{ url_for('admin.edit_quiz', quiz_id=quiz.id) }}" 
+                                                   class="btn btn-outline-warning btn-sm me-1" title="Edit Quiz">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form method="POST" action="{{ url_for('admin.delete_quiz', quiz_id=quiz.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this quiz? This action cannot be undone.');">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Quiz">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                            <h5>No Quizzes Found</h5>
+                            <p>Create your first quiz for this chapter.</p>
+                            <a href="{{ url_for('admin.add_quiz') }}?chapter_id={{ chapter.id }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Quiz
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

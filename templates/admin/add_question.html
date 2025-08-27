@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Add Question - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-plus"></i> Add Question</h2>
+            <p class="text-muted">
+                Quiz: {{ quiz.chapter.name }} ({{ quiz.chapter.subject.name }})
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> Question Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="question_statement" class="form-label">Question Statement *</label>
+                            <textarea class="form-control" id="question_statement" name="question_statement" 
+                                      rows="3" required placeholder="Enter your question here..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="option1" class="form-label">Option A *</label>
+                                <input type="text" class="form-control" id="option1" name="option1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="option2" class="form-label">Option B *</label>
+                                <input type="text" class="form-control" id="option2" name="option2" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="option3" class="form-label">Option C *</label>
+                                <input type="text" class="form-control" id="option3" name="option3" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="option4" class="form-label">Option D *</label>
+                                <input type="text" class="form-control" id="option4" name="option4" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Correct Answer *</label>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="correct_option" value="1" id="correct1" required>
+                                        <label class="form-check-label" for="correct1">Option A</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="correct_option" value="2" id="correct2" required>
+                                        <label class="form-check-label" for="correct2">Option B</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="correct_option" value="3" id="correct3" required>
+                                        <label class="form-check-label" for="correct3">Option C</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="correct_option" value="4" id="correct4" required>
+                                        <label class="form-check-label" for="correct4">Option D</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Add Question
+                            </button>
+                            <a href="{{ url_for('admin.quiz_questions', quiz_id=quiz.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Quiz
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

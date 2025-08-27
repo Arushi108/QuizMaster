@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+            <p class="text-muted">Manage your quiz platform</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div>
+                        <h3 class="mb-0">{{ total_users }}</h3>
+                        <p class="mb-0">Total Users</p>
+                    </div>
+                    <i class="fas fa-users stats-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div>
+                        <h3 class="mb-0">{{ total_subjects }}</h3>
+                        <p class="mb-0">Subjects</p>
+                    </div>
+                    <i class="fas fa-book stats-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div>
+                        <h3 class="mb-0">{{ total_quizzes }}</h3>
+                        <p class="mb-0">Total Quizzes</p>
+                    </div>
+                    <i class="fas fa-clipboard-list stats-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div>
+                        <h3 class="mb-0">{{ total_questions }}</h3>
+                        <p class="mb-0">Questions</p>
+                    </div>
+                    <i class="fas fa-question-circle stats-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="/admin/subjects" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-book"></i><br>
+                                <small>Manage Subjects</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="/admin/chapters" class="btn btn-info btn-lg w-100">
+                                <i class="fas fa-bookmark"></i><br>
+                                <small>Manage Chapters</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="/admin/quizzes" class="btn btn-warning btn-lg w-100">
+                                <i class="fas fa-clipboard-list"></i><br>
+                                <small>Manage Quizzes</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="/admin/users" class="btn btn-success btn-lg w-100">
+                                <i class="fas fa-users"></i><br>
+                                <small>Manage Users</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> User Registration Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userRegistrationChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Quiz Attempts</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="quizAttemptsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Inject data in a way that doesn't confuse linters -->
+<script id="chart-data" type="application/json">
+{
+    "userRegistration": {{ user_registration_data | tojson | safe }},
+    "quizAttempts": {{ quiz_attempts_data | tojson | safe }}
+}
+</script>
+
+<script>
+    // Get data from the JSON script tag
+    const chartDataElement = document.getElementById('chart-data');
+    const chartData = JSON.parse(chartDataElement.textContent);
+    
+    // User Registration Chart
+    const userCtx = document.getElementById('userRegistrationChart').getContext('2d');
+    new Chart(userCtx, {
+        type: 'line',
+        data: {
+            labels: chartData.userRegistration.map(function(item) { return item.label; }),
+            datasets: [{
+                label: 'New Users',
+                data: chartData.userRegistration.map(function(item) { return item.count; }),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'User Registration Trend (Last 6 Months)'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Quiz Attempts Chart
+    const quizCtx = document.getElementById('quizAttemptsChart').getContext('2d');
+    new Chart(quizCtx, {
+        type: 'bar',
+        data: {
+            labels: chartData.quizAttempts.map(function(item) { return item.label; }),
+            datasets: [{
+                label: 'Attempts',
+                data: chartData.quizAttempts.map(function(item) { return item.count; }),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Quiz Attempts by Subject'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    
+    // Add fallback message if no data
+    if (chartData.userRegistration.length === 0) {
+        document.getElementById('userRegistrationChart').parentElement.innerHTML = 
+            '<p class="text-muted text-center">No user registration data available</p>';
+    }
+    
+    if (chartData.quizAttempts.length === 0) {
+        document.getElementById('quizAttemptsChart').parentElement.innerHTML = 
+            '<p class="text-muted text-center">No quiz attempts data available</p>';
+    }
+</script>
+{% endblock %}

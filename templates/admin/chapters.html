@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Chapters - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-bookmark"></i> Manage Chapters</h2>
+            <p class="text-muted">Organize chapters within subjects</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list"></i> All Chapters</h5>
+                        <a href="{{ url_for('admin.add_chapter') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Chapter
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if chapters %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Chapter Name</th>
+                                        <th>Subject</th>
+                                        <th>Description</th>
+                                        <th>Quizzes</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for chapter in chapters %}
+                                        <tr>
+                                            <td>{{ chapter.id }}</td>
+                                            <td><strong>{{ chapter.name }}</strong></td>
+                                            <td>
+                                                <span class="badge bg-info">{{ chapter.subject.name }}</span>
+                                            </td>
+                                            <td>{{ chapter.description[:50] + '...' if chapter.description and chapter.description|length > 50 else chapter.description or 'No description' }}</td>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    {{ chapter.quizzes|length }} quiz(es)
+                                                </span>
+                                            </td>
+                                            <td>{{ chapter.created_at.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('admin.edit_chapter', chapter_id=chapter.id) }}" 
+                                                       class="btn btn-outline-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="{{ url_for('admin.chapter_quizzes', chapter_id=chapter.id) }}" 
+                                                       class="btn btn-outline-info">
+                                                        <i class="fas fa-clipboard-list"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            data-chapter-id="{{ chapter.id }}"
+                                                            data-chapter-name="{{ chapter.name }}"
+                                                            onclick="confirmDelete(this)">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-bookmark fa-3x mb-3"></i>
+                            <h5>No Chapters Found</h5>
+                            <p>Create your first chapter to organize quizzes within subjects.</p>
+                            <a href="{{ url_for('admin.add_chapter') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Chapter
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the chapter "<span id="chapterName"></span>"?</p>
+                <p class="text-danger"><small>This will also delete all associated quizzes and questions!</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Chapter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function confirmDelete(button) {
+        const chapterId = button.getAttribute('data-chapter-id');
+        const chapterName = button.getAttribute('data-chapter-name');
+        
+        document.getElementById('chapterName').textContent = chapterName;
+        document.getElementById('deleteForm').action = `/admin/chapters/${chapterId}/delete`;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+{% endblock %}

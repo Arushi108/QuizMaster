@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-users"></i> Manage Users</h2>
+            <p class="text-muted">View and manage all registered users</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list"></i> All Users</h5>
+                        <span class="badge bg-primary">{{ users|length }} Total Users</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if users %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Registered</th>
+                                        <th>Quiz Attempts</th>
+                                        <th>Avg Score</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                        <tr>
+                                            <td>{{ user.id }}</td>
+                                            <td><strong>{{ user.full_name }}</strong></td>
+                                            <td>{{ user.username }}</td>
+                                            <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    {{ user.scores|length }} attempts
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if user.scores %}
+                                                    {% set avg_score = (user.scores|sum(attribute='total_scored') / user.scores|sum(attribute='total_questions')) * 100 %}
+                                                    <span class="badge {% if avg_score >= 80 %}bg-success{% elif avg_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                        {{ "%.1f"|format(avg_score) }}%
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">No attempts</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('admin.user_scores', user_id=user.id) }}" 
+                                                   class="btn btn-outline-info btn-sm me-1" title="View Scores">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                </a>
+                                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user? This will also delete all their quiz scores.');">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete User">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h5>No Users Found</h5>
+                            <p>No users have registered yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Statistics Card -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie"></i> User Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ users|length }}</h4>
+                                <small class="text-muted">Total Users</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ users|selectattr('scores')|list|length }}</h4>
+                            <small class="text-muted">Active Users</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-trophy"></i> Top Performers</h6>
+                </div>
+                <div class="card-body">
+                    {% set active_users = users|selectattr('scores')|list %}
+                    {% if active_users %}
+                        {% for user in active_users[:3] %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>{{ user.full_name }}</span>
+                                {% if user.scores %}
+                                    {% set avg_score = (user.scores|sum(attribute='total_scored') / user.scores|sum(attribute='total_questions')) * 100 %}
+                                    <span class="badge bg-success">{{ "%.1f"|format(avg_score) }}%</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No quiz attempts yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Master - Welcome{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-4">
+                    <i class="fas fa-brain text-primary"></i> Quiz Master
+                </h1>
+                <p class="lead text-muted">
+                    Test your knowledge across multiple subjects and chapters. 
+                    Challenge yourself with our comprehensive quiz platform.
+                </p>
+            </div>
+
+            {% if not session.user_id %}
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">New User?</h5>
+                            <p class="card-text">Join our platform and start taking quizzes to test your knowledge.</p>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus"></i> Register Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100 border-success">
+                        <div class="card-body text-center">
+                            <i class="fas fa-sign-in-alt fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Existing User?</h5>
+                            <p class="card-text">Welcome back! Login to continue your learning journey.</p>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-5">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                                    <h6>Multiple Subjects</h6>
+                                    <small class="text-muted">Various subjects with organized chapters</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <i class="fas fa-clock fa-2x text-success mb-2"></i>
+                                    <h6>Timed Quizzes</h6>
+                                    <small class="text-muted">Time-bound assessments for better preparation</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                                    <h6>Progress Tracking</h6>
+                                    <small class="text-muted">Track your performance and improvement</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+                <div class="text-center">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>Welcome back, {{ session.full_name }}!</h3>
+                            <p class="text-muted">Ready to continue your learning journey?</p>
+                            {% if session.is_admin %}
+                                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-tachometer-alt"></i> Go to Admin Dashboard
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
